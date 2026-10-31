@@ -1,0 +1,192 @@
+{
+ "data": [
+  {
+   "ObjectIdentifier": "0A1B2C3D-0000-4000-8000-0000000000D1",
+   "Aces": [
+    {
+     "PrincipalSID": "S-1-5-21-1000-2000-3000-513",
+     "PrincipalType": "Group",
+     "RightName": "Enroll",
+     "IsInherited": false
+    },
+    {
+     "PrincipalSID": "CORP.LOCAL-S-1-5-11",
+     "PrincipalType": "Group",
+     "RightName": "Enroll",
+     "IsInherited": false
+    }
+   ],
+   "IsDeleted": false,
+   "Properties": {
+    "name": "VULNTEMPLATE@CORP.LOCAL",
+    "domain": "CORP.LOCAL",
+    "domainsid": "S-1-5-21-1000-2000-3000",
+    "enrolleesuppliessubject": true,
+    "requiresmanagerapproval": false,
+    "authorizedsignatures": 0,
+    "ekus": [
+     "1.3.6.1.5.5.7.3.2"
+    ],
+    "effectiveekus": [
+     "1.3.6.1.5.5.7.3.2"
+    ],
+    "authenticationenabled": true,
+    "schemaversion": 2
+   }
+  },
+  {
+   "ObjectIdentifier": "0A1B2C3D-0000-4000-8000-0000000000D2",
+   "Aces": [
+    {
+     "PrincipalSID": "S-1-5-21-1000-2000-3000-513",
+     "PrincipalType": "Group",
+     "RightName": "Enroll",
+     "IsInherited": false
+    }
+   ],
+   "IsDeleted": false,
+   "Properties": {
+    "name": "ANYPURPOSE@CORP.LOCAL",
+    "domain": "CORP.LOCAL",
+    "domainsid": "S-1-5-21-1000-2000-3000",
+    "enrolleesuppliessubject": false,
+    "requiresmanagerapproval": false,
+    "authorizedsignatures": 0,
+    "ekus": [
+     "2.5.29.37.0"
+    ],
+    "effectiveekus": [
+     "2.5.29.37.0"
+    ],
+    "authenticationenabled": true,
+    "schemaversion": 2
+   }
+  },
+  {
+   "ObjectIdentifier": "0A1B2C3D-0000-4000-8000-0000000000D3",
+   "Aces": [
+    {
+     "PrincipalSID": "S-1-5-21-1000-2000-3000-513",
+     "PrincipalType": "Group",
+     "RightName": "Enroll",
+     "IsInherited": false
+    }
+   ],
+   "IsDeleted": false,
+   "Properties": {
+    "name": "ENROLLAGENT@CORP.LOCAL",
+    "domain": "CORP.LOCAL",
+    "domainsid": "S-1-5-21-1000-2000-3000",
+    "enrolleesuppliessubject": false,
+    "requiresmanagerapproval": false,
+    "authorizedsignatures": 0,
+    "ekus": [
+     "1.3.6.1.4.1.311.20.2.1"
+    ],
+    "effectiveekus": [
+     "1.3.6.1.4.1.311.20.2.1"
+    ],
+    "authenticationenabled": false,
+    "schemaversion": 2
+   }
+  },
+  {
+   "ObjectIdentifier": "0A1B2C3D-0000-4000-8000-0000000000D4",
+   "Aces": [
+    {
+     "PrincipalSID": "S-1-5-21-1000-2000-3000-512",
+     "PrincipalType": "Group",
+     "RightName": "Enroll",
+     "IsInherited": false
+    },
+    {
+     "PrincipalSID": "S-1-5-21-1000-2000-3000-1200",
+     "PrincipalType": "Group",
+     "RightName": "GenericWrite",
+     "IsInherited": false
+    }
+   ],
+   "IsDeleted": false,
+   "Properties": {
+    "name": "WEBSERVER@CORP.LOCAL",
+    "domain": "CORP.LOCAL",
+    "domainsid": "S-1-5-21-1000-2000-3000",
+    "enrolleesuppliessubject": true,
+    "requiresmanagerapproval": false,
+    "authorizedsignatures": 0,
+    "ekus": [
+     "1.3.6.1.5.5.7.3.1"
+    ],
+    "effectiveekus": [
+     "1.3.6.1.5.5.7.3.1"
+    ],
+    "authenticationenabled": false,
+    "schemaversion": 2
+   }
+  },
+  {
+   "ObjectIdentifier": "0A1B2C3D-0000-4000-8000-0000000000D5",
+   "Aces": [
+    {
+     "PrincipalSID": "S-1-5-21-1000-2000-3000-513",
+     "PrincipalType": "Group",
+     "RightName": "Enroll",
+     "IsInherited": false
+    }
+   ],
+   "IsDeleted": false,
+   "Properties": {
+    "name": "USER@CORP.LOCAL",
+    "domain": "CORP.LOCAL",
+    "domainsid": "S-1-5-21-1000-2000-3000",
+    "enrolleesuppliessubject": false,
+    "requiresmanagerapproval": false,
+    "authorizedsignatures": 0,
+    "ekus": [
+     "1.3.6.1.5.5.7.3.2",
+     "1.3.6.1.5.5.7.3.4"
+    ],
+    "effectiveekus": [
+     "1.3.6.1.5.5.7.3.2",
+     "1.3.6.1.5.5.7.3.4"
+    ],
+    "authenticationenabled": true,
+    "schemaversion": 2
+   }
+  },
+  {
+   "ObjectIdentifier": "0A1B2C3D-0000-4000-8000-0000000000D6",
+   "Aces": [
+    {
+     "PrincipalSID": "S-1-5-21-1000-2000-3000-513",
+     "PrincipalType": "Group",
+     "RightName": "Enroll",
+     "IsInherited": false
+    }
+   ],
+   "IsDeleted": false,
+   "Properties": {
+    "name": "UNPUBLISHED@CORP.LOCAL",
+    "domain": "CORP.LOCAL",
+    "domainsid": "S-1-5-21-1000-2000-3000",
+    "enrolleesuppliessubject": true,
+    "requiresmanagerapproval": false,
+    "authorizedsignatures": 0,
+    "ekus": [
+     "1.3.6.1.5.5.7.3.2"
+    ],
+    "effectiveekus": [
+     "1.3.6.1.5.5.7.3.2"
+    ],
+    "authenticationenabled": true,
+    "schemaversion": 2
+   }
+  }
+ ],
+ "meta": {
+  "methods": 0,
+  "type": "certtemplates",
+  "count": 6,
+  "version": 6
+ }
+}

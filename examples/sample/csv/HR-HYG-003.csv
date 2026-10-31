@@ -1,0 +1,3 @@
+﻿finding_id,key,name,type,objectid,severity,privileged,password_last_set,password_age_days
+HR-HYG-003,S-1-5-21-1000-2000-3000-500,ADMINISTRATOR@CORP.LOCAL,User,S-1-5-21-1000-2000-3000-500,High,Yes,2023-07-16,898
+HR-HYG-003,S-1-5-21-1000-2000-3000-1101,SVC_SQL@CORP.LOCAL,User,S-1-5-21-1000-2000-3000-1101,Medium,No,2023-07-16,898

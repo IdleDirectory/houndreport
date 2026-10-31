@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "houndreport"
+version = "0.1.0"
+description = "Offline analysis reports for BloodHound CE / SharpHound CE collector output"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "networkx>=3.0",
+    "jinja2>=3.1",
+    "click>=8.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4"]
+
+[project.scripts]
+houndreport = "houndreport.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["houndreport*"]
+
+[tool.setuptools.package-data]
+houndreport = ["templates/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,2 @@
+﻿finding_id,key,name,type,objectid,severity,principals,rights,published_on,ekus
+HR-ADCS-ESC3,0A1B2C3D-0000-4000-8000-0000000000D3,ENROLLAGENT@CORP.LOCAL,CertTemplate,0A1B2C3D-0000-4000-8000-0000000000D3,Critical,DOMAIN USERS@CORP.LOCAL,Enroll,CORP-CA@CORP.LOCAL,1.3.6.1.4.1.311.20.2.1

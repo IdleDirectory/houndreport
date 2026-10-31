@@ -1,0 +1,2 @@
+﻿finding_id,key,name,type,objectid,severity,tier0,admincount,password_age_days
+HR-KERB-003,S-1-5-21-1000-2000-3000-1102,ALICE@CORP.LOCAL,User,S-1-5-21-1000-2000-3000-1102,High,No,No,898

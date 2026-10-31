@@ -1,0 +1,2 @@
+﻿finding_id,key,name,type,objectid,severity,computer,operating_system,why_tier0
+HR-ACCESS-002,S-1-5-21-1000-2000-3000-1301|S-1-5-21-1000-2000-3000-1105,JANE@CORP.LOCAL,User,S-1-5-21-1000-2000-3000-1105,High,WS01.CORP.LOCAL,Windows 10 Pro,Member of DOMAIN ADMINS@CORP.LOCAL

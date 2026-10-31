@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<meta name="generator" content="houndreport {{ doc.tool_version }}">
+<title>AD Exposure Report{% if doc.client %} · {{ doc.client }}{% endif %}</title>
+<style>
+{% include "_style.css" %}
+</style>
+</head>
+<body>
+<a class="skip" href="#summary">Skip to summary</a>
+<header class="masthead">
+  <div class="wrap masthead-inner">
+    <div>
+      <p class="eyebrow">Active Directory exposure assessment</p>
+      <h1>{{ doc.client or "BloodHound data analysis" }}</h1>
+      <p class="meta">
+        {{ doc.domains | map(attribute="name") | join(", ") or "No domain object collected" }}
+        · Data as of {{ doc.reference_date }} · Generated {{ doc.generated_at }}
+        {% if doc.redacted %}<span class="pill">Redacted</span>{% endif %}
+      </p>
+    </div>
+    <div class="toolbar no-print">
+      <button type="button" class="btn" id="theme-toggle" aria-label="Toggle light or dark theme">&#9680; Theme</button>
+      <button type="button" class="btn" id="print-btn">Print</button>
+    </div>
+  </div>
+  <nav class="wrap toc no-print" aria-label="Sections">
+    <a href="#summary">Summary</a><a href="#findings">Findings</a><a href="#paths">Attack paths</a>
+    <a href="#hygiene">Hygiene</a><a href="#tier0">Tier 0</a><a href="#inputs">Inputs &amp; method</a>
+  </nav>
+</header>
+
+<main class="wrap">
+<section id="summary" aria-labelledby="h-summary">
+  <h2 id="h-summary">Executive summary</h2>
+  <div class="summary-grid">
+    <div class="card score-card rating-{{ doc.risk.rating | lower }}">
+      {{ gauge }}
+      <div>
+        <div class="score-label">Risk rating</div>
+        <div class="score-rating">{{ doc.risk.rating }}</div>
+        <div class="muted small">Score {{ doc.risk.score }} / 100 (higher is worse)</div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Findings by severity</h3>
+      <div class="sev-tiles">
+        {% for sev in sev_order %}
+        <div class="sev-tile sev-{{ sev | lower }}"><span class="n">{{ s.findings_by_severity[sev] }}</span>{{ sev }}</div>
+        {% endfor %}
+      </div>
+      <p class="muted small" style="margin:.6rem 0 0">{{ s.affected_objects }} affected objects across {{ s.findings }} findings</p>
+    </div>
+    <div class="card">
+      <h3>Key metrics</h3>
+      <dl class="kv">
+        <dt>Users with a path to Tier 0</dt><dd>{{ s.users_with_path }} / {{ s.enabled_users }} ({{ s.users_with_path_pct }}%)</dd>
+        <dt>Distinct attack paths</dt><dd>{{ s.attack_paths }}{% if s.attack_paths_truncated %}+{% endif %}</dd>
+        <dt>Tier 0 principals</dt><dd>{{ s.tier0_principals }}</dd>
+        <dt>Kerberoastable users</dt><dd>{{ doc.stats.users.kerberoastable }}</dd>
+        <dt>Stale enabled accounts</dt><dd>{{ doc.stats.users.stale_enabled + doc.stats.computers.stale_enabled }}</dd>
+        <dt>LAPS coverage</dt><dd>{{ doc.stats.computers.laps_coverage_pct }}%</dd>
+      </dl>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h3>Key observations</h3>
+    <ul class="observations">
+      {% for line in doc.narrative %}<li>{{ line }}</li>{% endfor %}
+    </ul>
+  </div>
+  {% if findings %}
+  <div class="card">
+    <h3>Priority findings</h3>
+    <div class="table-scroll">
+    <table class="data compact">
+      <thead><tr><th>Severity</th><th>Finding</th><th class="num">Affected</th></tr></thead>
+      <tbody>
+      {% for f in findings[:6] %}
+        <tr>
+          <td><span class="sev sev-{{ f.severity | lower }}">{{ f.severity }}</span></td>
+          <td><a href="#f-{{ f.id }}">{{ f.title }}</a> <span class="muted mono small">{{ f.id }}</span></td>
+          <td class="num">{{ f.affected_count }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+  {% endif %}
+</section>
+
+<section id="findings" aria-labelledby="h-findings">
+  <h2 id="h-findings">Findings</h2>
+  {% if not findings %}
+  <p class="empty">No findings were produced from the collected data.</p>
+  {% else %}
+  <div class="filters no-print">
+    <input type="search" id="finding-search" placeholder="Filter by ID, title or affected object" aria-label="Filter findings">
+    <div class="chips" role="group" aria-label="Severity filter">
+      {% for sev in sev_order if s.findings_by_severity[sev] %}
+      <label class="chip sev-{{ sev | lower }}"><input type="checkbox" class="sev-filter" value="{{ sev }}" checked> {{ sev }} ({{ s.findings_by_severity[sev] }})</label>
+      {% endfor %}
+    </div>
+    <button type="button" class="btn" id="expand-all">Expand all</button>
+    <button type="button" class="btn" id="collapse-all">Collapse all</button>
+    <span id="finding-count" class="muted small" aria-live="polite"></span>
+  </div>
+  <div class="table-scroll">
+  <table class="data sortable grouped" id="findings-table">
+    <thead>
+      <tr>
+        <th data-nosort class="toggle-col"><span class="sr-only">Details</span></th>
+        <th>ID</th><th data-type="num">Severity</th><th>Title</th><th>Category</th><th data-type="num" class="num">Affected</th>
+      </tr>
+    </thead>
+    {% for f in findings %}
+    <tbody class="finding" id="f-{{ f.id }}" data-severity="{{ f.severity }}" data-search="{{ f.search }}">
+      <tr class="summary-row">
+        <td><button type="button" class="expander" aria-expanded="false" aria-controls="d-{{ f.id }}" aria-label="Details for {{ f.id }}">&#9656;</button></td>
+        <td class="mono">{{ f.id }}</td>
+        <td data-value="{{ f.rank }}"><span class="sev sev-{{ f.severity | lower }}">{{ f.severity }}</span></td>
+        <td>{{ f.title }}</td>
+        <td>{{ f.category }}</td>
+        <td class="num" data-value="{{ f.affected_count }}">{{ f.affected_count }}</td>
+      </tr>
+      <tr class="detail-row" id="d-{{ f.id }}" hidden>
+        <td colspan="6"><div class="detail">
+          <div class="detail-cols">
+            <div>
+              <h4>Description</h4><p>{{ f.description }}</p>
+              <h4>Remediation</h4><p>{{ f.remediation }}</p>
+            </div>
+            <div>
+              <h4>NIST SP 800-171 / CMMC L2</h4>
+              <ul class="controls">
+                {% for c in f.controls %}<li><span class="mono">{{ c.nist }}</span> · <span class="mono">{{ c.cmmc }}</span> — {{ c.title }}</li>{% endfor %}
+              </ul>
+              {% if f.references %}
+              <h4>References</h4>
+              <ul class="controls">{% for r in f.references %}<li><a href="{{ r }}" rel="noopener noreferrer">{{ r }}</a></li>{% endfor %}</ul>
+              {% endif %}
+            </div>
+          </div>
+          <h4>Affected ({{ f.affected_count }})</h4>
+          <input type="search" class="table-filter no-print" data-target="a-{{ f.id }}" placeholder="Filter rows" aria-label="Filter affected objects for {{ f.id }}">
+          <div class="table-scroll">
+          <table class="data sortable compact" id="a-{{ f.id }}">
+            <thead><tr><th>Name</th><th>Type</th><th data-type="num">Severity</th>{% for c in f.columns %}<th>{{ c.label }}</th>{% endfor %}</tr></thead>
+            <tbody>
+            {% for a in f.rows %}
+              <tr>
+                <td class="name">{{ a.name }}</td>
+                <td>{{ a.type }}</td>
+                <td data-value="{{ a.rank }}">{% if a.severity %}<span class="sev sev-{{ a.severity | lower }}">{{ a.severity }}</span>{% endif %}</td>
+                {% for c in f.columns %}<td class="name">{{ a.details.get(c.key) | fmt }}</td>{% endfor %}
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+          </div>
+          {% if f.truncated %}<p class="muted small">Showing the first {{ f.rows | length }} of {{ f.affected_count }} rows; csv/{{ f.id }}.csv has the full list.</p>{% endif %}
+        </div></td>
+      </tr>
+    </tbody>
+    {% endfor %}
+  </table>
+  </div>
+  {% endif %}
+</section>
+
+<section id="paths" aria-labelledby="h-paths">
+  <h2 id="h-paths">Attack paths to Tier 0</h2>
+  {% if not paths %}
+  <p class="empty">No attack paths from non-privileged principals to Tier 0 were found in the collected data.</p>
+  {% else %}
+  <p>{{ s.users_with_path }} of {{ s.enabled_users }} enabled non-privileged users ({{ s.users_with_path_pct }}%) can reach Tier 0.
+     {{ s.attack_paths }} distinct shortest paths were found; the top {{ paths | length }} are shown, ranked by length and number of users affected.
+     The complete list is in finding HR-PATH-001.</p>
+  {% for p in paths %}
+  <article class="card path-card">
+    <header class="path-head">
+      <span class="path-rank">#{{ loop.index }}</span>
+      <div>
+        <div class="path-title"><span class="name">{{ p.source_name }}</span> &rarr; <span class="name">{{ p.target_name }}</span></div>
+        <div class="muted small">{{ p.length }} hop{{ "s" if p.length != 1 }} · {{ p.impact }} enabled user{{ "s" if p.impact != 1 }} affected · target: {{ p.target_reason }}</div>
+      </div>
+    </header>
+    <div class="path-body">
+      <div>{{ p.svg }}</div>
+      <ol class="hops">
+        {% for h in p.hops %}<li><span class="edge">{{ h.kind }}</span> {{ h.explanation }}</li>{% endfor %}
+      </ol>
+    </div>
+  </article>
+  {% endfor %}
+  {% endif %}
+</section>
+
+<section id="hygiene" aria-labelledby="h-hygiene">
+  <h2 id="h-hygiene">Hygiene statistics</h2>
+  {% set u = doc.stats.users %}{% set c = doc.stats.computers %}
+  <div class="grid-2">
+    <div class="card">
+      <h3>User accounts</h3>
+      <dl class="kv">
+        <dt>Total</dt><dd>{{ u.total }}</dd>
+        <dt>Enabled</dt><dd>{{ u.enabled }}</dd>
+        <dt>Disabled</dt><dd>{{ u.disabled }}</dd>
+        <dt>Enabled, inactive &gt; {{ doc.options.stale_days }} days</dt><dd>{{ u.stale_enabled }}</dd>
+        <dt>Password never expires</dt><dd>{{ u.password_never_expires }}</dd>
+        <dt>Password older than 1 year</dt><dd>{{ u.password_older_than_1y }}</dd>
+        <dt>Kerberoastable</dt><dd>{{ u.kerberoastable }}</dd>
+        <dt>AS-REP roastable</dt><dd>{{ u.asrep_roastable }}</dd>
+        <dt>adminCount = 1</dt><dd>{{ u.admincount }}</dd>
+      </dl>
+    </div>
+    <div class="card">
+      <h3>Computers</h3>
+      <dl class="kv">
+        <dt>Total</dt><dd>{{ c.total }}</dd>
+        <dt>Enabled</dt><dd>{{ c.enabled }}</dd>
+        <dt>Domain controllers</dt><dd>{{ c.domain_controllers }}</dd>
+        <dt>Enabled, inactive &gt; {{ doc.options.stale_days }} days</dt><dd>{{ c.stale_enabled }}</dd>
+        <dt>Unsupported OS</dt><dd>{{ c.unsupported_os }}</dd>
+        <dt>Unconstrained delegation (non-DC)</dt><dd>{{ c.unconstrained_delegation }}</dd>
+        <dt>LAPS coverage (non-DC)</dt><dd>{{ c.laps_coverage_pct }}%</dd>
+      </dl>
+    </div>
+    <div class="card">
+      <h3>Collection coverage</h3>
+      {% set col = doc.stats.collection %}
+      <dl class="kv">
+        <dt>Objects</dt><dd>{{ col.objects }}</dd>
+        <dt>Referenced but not collected</dt><dd>{{ col.placeholders }}</dd>
+        <dt>Relationships</dt><dd>{{ col.relationships }}</dd>
+        <dt>Computers with local admin data</dt><dd>{{ col.computers_with_local_admin_data }}</dd>
+        <dt>Computers with session data</dt><dd>{{ col.computers_with_session_data }}</dd>
+        <dt>Certificate templates / Enterprise CAs</dt><dd>{{ col.cert_templates }} / {{ col.enterprise_cas }}</dd>
+        <dt>Groups</dt><dd>{{ doc.stats.groups.total }}</dd>
+      </dl>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h3>Operating systems (enabled computers)</h3>
+    {% if doc.stats.os_distribution %}
+    <div class="table-scroll">
+    <table class="data sortable compact">
+      <thead><tr><th>Operating system</th><th data-type="num" class="num">Computers</th><th data-type="num">Share</th><th>Support</th></tr></thead>
+      <tbody>
+      {% for os in doc.stats.os_distribution %}
+        <tr>
+          <td>{{ os.name }}</td>
+          <td class="num">{{ os.count }}</td>
+          <td data-value="{{ os.pct }}"><div class="bar{% if os.unsupported %} bad{% endif %}" title="{{ os.pct }}%"><span style="width: {{ os.pct }}%"></span></div></td>
+          <td>{% if os.unsupported %}<span class="sev sev-high">Unsupported</span>{% else %}<span class="muted">Supported / unknown</span>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}<p class="empty">No computer data collected.</p>{% endif %}
+  </div>
+</section>
+
+<section id="tier0" aria-labelledby="h-tier0">
+  <h2 id="h-tier0">Tier 0 inventory</h2>
+  <p class="muted small">Privileged principals and the infrastructure objects (domain controller OUs, linked GPOs) treated as Tier 0 targets. Members are expanded transitively.</p>
+  <input type="search" class="table-filter no-print" data-target="tier0-table" placeholder="Filter Tier 0 objects" aria-label="Filter Tier 0 objects">
+  <div class="table-scroll" style="margin-top:8px">
+  <table class="data sortable compact" id="tier0-table">
+    <thead><tr><th>Name</th><th>Type</th><th>Why Tier 0</th><th>Object ID</th></tr></thead>
+    <tbody>
+    {% for t in doc.tier0 %}
+      <tr><td class="name">{{ t.name }}</td><td>{{ t.type }}</td><td>{{ t.reason }}</td><td class="mono small name">{{ t.objectid }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="inputs" aria-labelledby="h-inputs">
+  <h2 id="h-inputs">Inputs &amp; methodology</h2>
+  <div class="grid-2">
+    <div class="card">
+      <h3>Files analysed</h3>
+      <div class="table-scroll">
+      <table class="data compact">
+        <thead><tr><th>File</th><th>Type</th><th>Version</th><th class="num">Objects</th></tr></thead>
+        <tbody>
+        {% for f in doc.inputs.files %}<tr><td class="name">{{ f.file }}</td><td>{{ f.type }}</td><td>{{ f.version | fmt }}</td><td class="num">{{ f.count }}</td></tr>{% endfor %}
+        </tbody>
+      </table>
+      </div>
+      {% if doc.inputs.warnings %}
+      <h4>Warnings</h4>
+      <ul class="controls">{% for w in doc.inputs.warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+      {% endif %}
+    </div>
+    <div class="card">
+      <h3>Method</h3>
+      <ul class="controls">
+        <li>All analysis runs offline on SharpHound CE JSON; this file makes no network requests.</li>
+        <li>Tier 0: built-in privileged groups and accounts, domain controllers, domain objects and DCSync holders, expanded through nested group membership.</li>
+        <li>Attack paths: shortest paths over membership, ACL, local admin, session, delegation, GPO and containment edges. Sessions reflect collection time only.</li>
+        <li>Stale accounts are measured against the newest logon timestamp in the data ({{ doc.reference_date }}), threshold {{ doc.options.stale_days }} days.</li>
+        <li>Risk score: severity-weighted findings, scaled by affected count, mapped to 0-100. Ratings: Low &lt; 25 ≤ Moderate &lt; 50 ≤ High &lt; 75 ≤ Critical.</li>
+        <li>Control IDs reference NIST SP 800-171 Rev. 2 and the matching CMMC Level 2 practices.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="wrap">Generated by houndreport {{ doc.tool_version }} on {{ doc.generated_at }}. Self-contained offline report.</footer>
+<script>
+{% include "_script.js" %}
+</script>
+</body>
+</html>

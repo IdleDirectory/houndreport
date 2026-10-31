@@ -1,0 +1,2 @@
+# Keep LF everywhere so the fixture byte-for-byte test passes on every OS.
+* text=auto eol=lf

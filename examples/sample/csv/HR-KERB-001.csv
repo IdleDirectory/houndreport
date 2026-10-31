@@ -1,0 +1,2 @@
+﻿finding_id,key,name,type,objectid,severity,spns,password_last_set,password_age_days,admincount,tier0
+HR-KERB-001,S-1-5-21-1000-2000-3000-1107,SVC_BACKUP@CORP.LOCAL,User,S-1-5-21-1000-2000-3000-1107,Critical,backup/app01.corp.local,2023-07-16,898,Yes,Yes

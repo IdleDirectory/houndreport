@@ -1,0 +1,95 @@
+{
+ "data": [
+  {
+   "ObjectIdentifier": "0A1B2C3D-0000-4000-8000-000000000001",
+   "Aces": [],
+   "IsDeleted": false,
+   "Links": [
+    {
+     "IsEnforced": false,
+     "GUID": "6AC1786C-016F-11D2-945F-00C04FB984F9"
+    }
+   ],
+   "ChildObjects": [
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1000",
+     "ObjectType": "Computer"
+    }
+   ],
+   "ContainedBy": {
+    "ObjectIdentifier": "S-1-5-21-1000-2000-3000",
+    "ObjectType": "Domain"
+   },
+   "Properties": {
+    "name": "DOMAIN CONTROLLERS@CORP.LOCAL",
+    "domain": "CORP.LOCAL",
+    "blocksinheritance": false
+   }
+  },
+  {
+   "ObjectIdentifier": "0A1B2C3D-0000-4000-8000-000000000002",
+   "Aces": [],
+   "IsDeleted": false,
+   "Links": [
+    {
+     "IsEnforced": true,
+     "GUID": "0A1B2C3D-0000-4000-8000-0000000000A1"
+    }
+   ],
+   "ChildObjects": [
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1301",
+     "ObjectType": "Computer"
+    },
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1302",
+     "ObjectType": "Computer"
+    },
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1303",
+     "ObjectType": "Computer"
+    },
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1304",
+     "ObjectType": "Computer"
+    }
+   ],
+   "ContainedBy": {
+    "ObjectIdentifier": "S-1-5-21-1000-2000-3000",
+    "ObjectType": "Domain"
+   },
+   "GPOChanges": {
+    "LocalAdmins": [
+     {
+      "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1200",
+      "ObjectType": "Group"
+     }
+    ],
+    "RemoteDesktopUsers": [],
+    "DcomUsers": [],
+    "PSRemoteUsers": [],
+    "AffectedComputers": [
+     {
+      "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1301",
+      "ObjectType": "Computer"
+     },
+     {
+      "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1302",
+      "ObjectType": "Computer"
+     }
+    ]
+   },
+   "Properties": {
+    "name": "WORKSTATIONS@CORP.LOCAL",
+    "domain": "CORP.LOCAL",
+    "blocksinheritance": false
+   }
+  }
+ ],
+ "meta": {
+  "methods": 0,
+  "type": "ous",
+  "count": 2,
+  "version": 6
+ }
+}

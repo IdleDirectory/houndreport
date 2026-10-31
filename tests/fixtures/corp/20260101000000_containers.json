@@ -1,0 +1,73 @@
+{
+ "data": [
+  {
+   "ObjectIdentifier": "0A1B2C3D-0000-4000-8000-000000000003",
+   "Aces": [],
+   "IsDeleted": false,
+   "ChildObjects": [
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-500",
+     "ObjectType": "User"
+    },
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-502",
+     "ObjectType": "User"
+    },
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1101",
+     "ObjectType": "User"
+    },
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1102",
+     "ObjectType": "User"
+    },
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1103",
+     "ObjectType": "User"
+    },
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1104",
+     "ObjectType": "User"
+    },
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1105",
+     "ObjectType": "User"
+    },
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1106",
+     "ObjectType": "User"
+    },
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1107",
+     "ObjectType": "User"
+    },
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1108",
+     "ObjectType": "User"
+    },
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1109",
+     "ObjectType": "User"
+    },
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1110",
+     "ObjectType": "User"
+    }
+   ],
+   "ContainedBy": {
+    "ObjectIdentifier": "S-1-5-21-1000-2000-3000",
+    "ObjectType": "Domain"
+   },
+   "Properties": {
+    "name": "USERS@CORP.LOCAL",
+    "domain": "CORP.LOCAL"
+   }
+  }
+ ],
+ "meta": {
+  "methods": 0,
+  "type": "containers",
+  "count": 1,
+  "version": 6
+ }
+}

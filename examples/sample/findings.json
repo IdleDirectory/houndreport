@@ -1,0 +1,1340 @@
+{
+  "schema_version": 1,
+  "tool": "houndreport",
+  "tool_version": "0.1.0",
+  "generated_at": "2026-10-31T19:39:54Z",
+  "client": "Example Corp (synthetic)",
+  "redacted": false,
+  "reference_date": "2025-12-30",
+  "options": {
+    "stale_days": 90,
+    "top_paths": 10
+  },
+  "domains": [
+    {
+      "name": "CORP.LOCAL",
+      "objectid": "S-1-5-21-1000-2000-3000",
+      "functional_level": "2016"
+    }
+  ],
+  "risk": {
+    "score": 93,
+    "rating": "Critical",
+    "raw": 399.7
+  },
+  "summary": {
+    "findings_by_severity": {
+      "Critical": 9,
+      "High": 6,
+      "Medium": 4,
+      "Low": 1,
+      "Info": 0
+    },
+    "findings": 20,
+    "affected_objects": 31,
+    "tier0_principals": 12,
+    "enabled_users": 6,
+    "users_with_path": 6,
+    "users_with_path_pct": 100.0,
+    "attack_paths": 4,
+    "attack_paths_truncated": false
+  },
+  "narrative": [
+    "Overall exposure is rated Critical (93/100).",
+    "9 critical and 6 high-severity findings were identified.",
+    "6 of 6 enabled non-privileged users (100.0%) have at least one attack path to Tier 0.",
+    "The shortest attack path to Tier 0 is 1 hop long.",
+    "Tier 0 contains 12 privileged principals.",
+    "Most severe issue: Non-default principals with DCSync rights (HR-ACL-001)."
+  ],
+  "findings": [
+    {
+      "id": "HR-ACL-001",
+      "title": "Non-default principals with DCSync rights",
+      "severity": "Critical",
+      "category": "Access control",
+      "description": "These principals hold both 'Replicating Directory Changes' and 'Replicating Directory Changes All' on the domain. They can retrieve the password hash of any account, including krbtgt, without touching a domain controller's disk. Only domain controllers and the built-in administrative groups should hold these rights.",
+      "remediation": "Remove the replication rights from the domain object's DACL unless there is a documented need (e.g. Azure AD Connect / Entra Connect sync account). Treat any remaining holder as Tier 0: protect, monitor (event 4662 with the replication GUIDs) and rotate its credentials.",
+      "controls": [
+        {
+          "nist": "3.1.5",
+          "cmmc": "AC.L2-3.1.5",
+          "title": "Employ least privilege, including for security functions and privileged accounts"
+        },
+        {
+          "nist": "3.1.7",
+          "cmmc": "AC.L2-3.1.7",
+          "title": "Prevent non-privileged users from executing privileged functions"
+        }
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T1003/006/"
+      ],
+      "affected_count": 1,
+      "affected": [
+        {
+          "key": "S-1-5-21-1000-2000-3000-1108",
+          "name": "SVC_SYNC@CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1108",
+          "type": "User",
+          "severity": "Critical",
+          "details": {
+            "domains": [
+              "CORP.LOCAL"
+            ],
+            "effective_members": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-ACL-002",
+      "title": "Dangerous permissions over Tier 0 objects held by non-Tier 0 principals",
+      "severity": "Critical",
+      "category": "Access control",
+      "description": "Non-privileged principals hold rights such as GenericAll, WriteDacl, WriteOwner, ForceChangePassword or AddMember over Tier 0 users, groups, computers, GPOs or containers. Each entry is a one-step escalation to Tier 0 for anyone who controls the principal.",
+      "remediation": "Remove the listed ACEs (fix inherited entries at the parent OU/container). Make sure privileged accounts and groups are protected by AdminSDHolder and that delegated administration (helpdesk, provisioning tools) is scoped to non-Tier 0 OUs only.",
+      "controls": [
+        {
+          "nist": "3.1.5",
+          "cmmc": "AC.L2-3.1.5",
+          "title": "Employ least privilege, including for security functions and privileged accounts"
+        },
+        {
+          "nist": "3.1.7",
+          "cmmc": "AC.L2-3.1.7",
+          "title": "Prevent non-privileged users from executing privileged functions"
+        }
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T1222/001/"
+      ],
+      "affected_count": 2,
+      "affected": [
+        {
+          "key": "S-1-5-21-1000-2000-3000-513|6AC1786C-016F-11D2-945F-00C04FB984F9|GenericWrite",
+          "name": "DEFAULT DOMAIN CONTROLLERS POLICY@CORP.LOCAL",
+          "objectid": "6AC1786C-016F-11D2-945F-00C04FB984F9",
+          "type": "GPO",
+          "severity": "Critical",
+          "details": {
+            "principal": "DOMAIN USERS@CORP.LOCAL",
+            "principal_type": "Group",
+            "right": "GenericWrite",
+            "inherited": false,
+            "broad_principal": true,
+            "why_tier0": "GPO linked to DOMAIN CONTROLLERS@CORP.LOCAL"
+          }
+        },
+        {
+          "key": "S-1-5-21-1000-2000-3000-1104|S-1-5-21-1000-2000-3000-1107|ForceChangePassword",
+          "name": "SVC_BACKUP@CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1107",
+          "type": "User",
+          "severity": "Critical",
+          "details": {
+            "principal": "CAROL@CORP.LOCAL",
+            "principal_type": "User",
+            "right": "ForceChangePassword",
+            "inherited": false,
+            "broad_principal": false,
+            "why_tier0": "Member of DOMAIN ADMINS@CORP.LOCAL"
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-ADCS-ESC1",
+      "title": "ADCS ESC1: enrollee-supplied subject on an authentication template",
+      "severity": "Critical",
+      "category": "ADCS",
+      "description": "Low-privileged principals can enroll in a published template that allows client authentication, lets the requester supply the subject (SAN) and needs no approval or authorized signature. They can request a certificate as any user, including a Domain Admin, and authenticate with it.",
+      "remediation": "Clear CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT, or require CA manager approval. Restrict enrollment to the specific groups that need the template, and remove Domain Users / Authenticated Users / Domain Computers from enrollment rights.",
+      "controls": [
+        {
+          "nist": "3.1.5",
+          "cmmc": "AC.L2-3.1.5",
+          "title": "Employ least privilege, including for security functions and privileged accounts"
+        },
+        {
+          "nist": "3.5.2",
+          "cmmc": "IA.L2-3.5.2",
+          "title": "Authenticate the identities of users, processes or devices"
+        },
+        {
+          "nist": "3.13.10",
+          "cmmc": "SC.L2-3.13.10",
+          "title": "Establish and manage cryptographic keys"
+        }
+      ],
+      "references": [
+        "https://posts.specterops.io/certified-pre-owned-d95910965cd2"
+      ],
+      "affected_count": 1,
+      "affected": [
+        {
+          "key": "0A1B2C3D-0000-4000-8000-0000000000D1",
+          "name": "VULNTEMPLATE@CORP.LOCAL",
+          "objectid": "0A1B2C3D-0000-4000-8000-0000000000D1",
+          "type": "CertTemplate",
+          "severity": "Critical",
+          "details": {
+            "principals": [
+              "AUTHENTICATED USERS@CORP.LOCAL",
+              "DOMAIN USERS@CORP.LOCAL"
+            ],
+            "rights": [
+              "Enroll"
+            ],
+            "published_on": [
+              "CORP-CA@CORP.LOCAL"
+            ],
+            "ekus": [
+              "1.3.6.1.5.5.7.3.2"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-ADCS-ESC2",
+      "title": "ADCS ESC2: Any Purpose or no-EKU template",
+      "severity": "Critical",
+      "category": "ADCS",
+      "description": "Low-privileged principals can enroll in a published template whose certificates are valid for any purpose (Any Purpose EKU or no EKU). Such certificates can be used for client authentication and, with no EKU, as a subordinate CA certificate.",
+      "remediation": "Replace Any Purpose / empty EKUs with the specific EKUs required. Restrict enrollment to the specific groups that need the template, and remove Domain Users / Authenticated Users / Domain Computers from enrollment rights.",
+      "controls": [
+        {
+          "nist": "3.1.5",
+          "cmmc": "AC.L2-3.1.5",
+          "title": "Employ least privilege, including for security functions and privileged accounts"
+        },
+        {
+          "nist": "3.13.10",
+          "cmmc": "SC.L2-3.13.10",
+          "title": "Establish and manage cryptographic keys"
+        }
+      ],
+      "references": [
+        "https://posts.specterops.io/certified-pre-owned-d95910965cd2"
+      ],
+      "affected_count": 1,
+      "affected": [
+        {
+          "key": "0A1B2C3D-0000-4000-8000-0000000000D2",
+          "name": "ANYPURPOSE@CORP.LOCAL",
+          "objectid": "0A1B2C3D-0000-4000-8000-0000000000D2",
+          "type": "CertTemplate",
+          "severity": "Critical",
+          "details": {
+            "principals": [
+              "DOMAIN USERS@CORP.LOCAL"
+            ],
+            "rights": [
+              "Enroll"
+            ],
+            "published_on": [
+              "CORP-CA@CORP.LOCAL"
+            ],
+            "ekus": [
+              "2.5.29.37.0"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-ADCS-ESC3",
+      "title": "ADCS ESC3: enrollment agent template open to low-privileged users",
+      "severity": "Critical",
+      "category": "ADCS",
+      "description": "Low-privileged principals can obtain a Certificate Request Agent certificate. Enrollment agents can request certificates on behalf of other users, including administrators, unless enrollment agent restrictions are configured on the CA.",
+      "remediation": "Restrict enrollment in agent templates to a dedicated group and configure Enrollment Agent restrictions on the CA. Restrict enrollment to the specific groups that need the template, and remove Domain Users / Authenticated Users / Domain Computers from enrollment rights.",
+      "controls": [
+        {
+          "nist": "3.1.5",
+          "cmmc": "AC.L2-3.1.5",
+          "title": "Employ least privilege, including for security functions and privileged accounts"
+        },
+        {
+          "nist": "3.13.10",
+          "cmmc": "SC.L2-3.13.10",
+          "title": "Establish and manage cryptographic keys"
+        }
+      ],
+      "references": [
+        "https://posts.specterops.io/certified-pre-owned-d95910965cd2"
+      ],
+      "affected_count": 1,
+      "affected": [
+        {
+          "key": "0A1B2C3D-0000-4000-8000-0000000000D3",
+          "name": "ENROLLAGENT@CORP.LOCAL",
+          "objectid": "0A1B2C3D-0000-4000-8000-0000000000D3",
+          "type": "CertTemplate",
+          "severity": "Critical",
+          "details": {
+            "principals": [
+              "DOMAIN USERS@CORP.LOCAL"
+            ],
+            "rights": [
+              "Enroll"
+            ],
+            "published_on": [
+              "CORP-CA@CORP.LOCAL"
+            ],
+            "ekus": [
+              "1.3.6.1.4.1.311.20.2.1"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-DELEG-001",
+      "title": "Unconstrained delegation on non-DC accounts",
+      "severity": "Critical",
+      "category": "Delegation",
+      "description": "Accounts trusted for unconstrained delegation receive a forwardable TGT from every user that authenticates to them. An attacker who controls one of these hosts can coerce a domain controller to authenticate (e.g. PrinterBug/PetitPotam) and capture its TGT, which leads straight to DCSync.",
+      "remediation": "Remove 'Trust this computer for delegation to any service'. Replace it with constrained delegation or RBCD scoped to the services required. Add privileged accounts to Protected Users or mark them 'Account is sensitive and cannot be delegated'.",
+      "controls": [
+        {
+          "nist": "3.1.5",
+          "cmmc": "AC.L2-3.1.5",
+          "title": "Employ least privilege, including for security functions and privileged accounts"
+        },
+        {
+          "nist": "3.4.6",
+          "cmmc": "CM.L2-3.4.6",
+          "title": "Employ the principle of least functionality"
+        }
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T1558/"
+      ],
+      "affected_count": 1,
+      "affected": [
+        {
+          "key": "S-1-5-21-1000-2000-3000-1303",
+          "name": "APP01.CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1303",
+          "type": "Computer",
+          "severity": "Critical",
+          "details": {
+            "operating_system": "Windows Server 2012 R2 Standard",
+            "tier0": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-DELEG-002",
+      "title": "Constrained delegation",
+      "severity": "Critical",
+      "category": "Delegation",
+      "description": "These accounts can impersonate any user to the listed services (S4U2Proxy). With protocol transition (TrustedToAuthForDelegation) no user interaction is needed at all. Delegation to services on Tier 0 hosts lets whoever controls the account take over those hosts.",
+      "remediation": "Review every msDS-AllowedToDelegateTo entry. Remove delegation to domain controllers and other Tier 0 hosts, disable protocol transition unless it is required, and protect privileged users with Protected Users or the 'sensitive and cannot be delegated' flag.",
+      "controls": [
+        {
+          "nist": "3.1.5",
+          "cmmc": "AC.L2-3.1.5",
+          "title": "Employ least privilege, including for security functions and privileged accounts"
+        },
+        {
+          "nist": "3.4.6",
+          "cmmc": "CM.L2-3.4.6",
+          "title": "Employ the principle of least functionality"
+        }
+      ],
+      "references": [],
+      "affected_count": 1,
+      "affected": [
+        {
+          "key": "S-1-5-21-1000-2000-3000-1109",
+          "name": "SVC_WEB@CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1109",
+          "type": "User",
+          "severity": "Critical",
+          "details": {
+            "targets": [
+              "DC01.CORP.LOCAL"
+            ],
+            "target_spns": [
+              "cifs/dc01.corp.local"
+            ],
+            "protocol_transition": true,
+            "tier0_targets": [
+              "DC01.CORP.LOCAL"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-KERB-001",
+      "title": "Kerberoastable privileged accounts",
+      "severity": "Critical",
+      "category": "Kerberos",
+      "description": "Privileged user accounts have a service principal name (SPN). Any authenticated user can request a service ticket for them and crack the account password offline. A cracked Tier 0 service account is an immediate domain compromise.",
+      "remediation": "Remove SPNs from privileged accounts, or move the service to a group Managed Service Account (gMSA). Where an SPN must stay, set a random 30+ character password, enable AES-only encryption (msDS-SupportedEncryptionTypes) and remove the account from privileged groups.",
+      "controls": [
+        {
+          "nist": "3.1.5",
+          "cmmc": "AC.L2-3.1.5",
+          "title": "Employ least privilege, including for security functions and privileged accounts"
+        },
+        {
+          "nist": "3.5.7",
+          "cmmc": "IA.L2-3.5.7",
+          "title": "Enforce minimum password complexity"
+        },
+        {
+          "nist": "3.5.10",
+          "cmmc": "IA.L2-3.5.10",
+          "title": "Store and transmit only cryptographically-protected passwords"
+        }
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T1558/003/"
+      ],
+      "affected_count": 1,
+      "affected": [
+        {
+          "key": "S-1-5-21-1000-2000-3000-1107",
+          "name": "SVC_BACKUP@CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1107",
+          "type": "User",
+          "severity": "Critical",
+          "details": {
+            "spns": [
+              "backup/app01.corp.local"
+            ],
+            "password_last_set": "2023-07-16",
+            "password_age_days": 898,
+            "admincount": true,
+            "tier0": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-PATH-001",
+      "title": "Attack paths from non-privileged principals to Tier 0",
+      "severity": "Critical",
+      "category": "Attack paths",
+      "description": "6 of 6 enabled non-Tier 0 users (100.0%) can reach a Tier 0 object by chaining group memberships, ACLs, local admin rights, sessions and delegation. Each row is the shortest path from a distinct starting point; paths that only differ by group nesting at the start are merged under the group with the widest membership.",
+      "remediation": "Break each path at its cheapest link, usually the first non-membership hop: remove the excessive ACE or local admin right, stop Tier 0 logons on lower-tier hosts, or remove delegation. Re-collect and re-run the report to confirm the path is gone.",
+      "controls": [
+        {
+          "nist": "3.1.5",
+          "cmmc": "AC.L2-3.1.5",
+          "title": "Employ least privilege, including for security functions and privileged accounts"
+        },
+        {
+          "nist": "3.1.7",
+          "cmmc": "AC.L2-3.1.7",
+          "title": "Prevent non-privileged users from executing privileged functions"
+        }
+      ],
+      "references": [],
+      "affected_count": 4,
+      "affected": [
+        {
+          "key": "S-1-5-21-1000-2000-3000-513|6AC1786C-016F-11D2-945F-00C04FB984F9",
+          "name": "DOMAIN USERS@CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-513",
+          "type": "Group",
+          "severity": "Critical",
+          "details": {
+            "target": "DEFAULT DOMAIN CONTROLLERS POLICY@CORP.LOCAL",
+            "hops": 1,
+            "impacted_users": 6,
+            "path": "DOMAIN USERS@CORP.LOCAL -> [GenericWrite] DEFAULT DOMAIN CONTROLLERS POLICY@CORP.LOCAL"
+          }
+        },
+        {
+          "key": "S-1-5-21-1000-2000-3000-1104|S-1-5-21-1000-2000-3000-1107",
+          "name": "CAROL@CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1104",
+          "type": "User",
+          "severity": "High",
+          "details": {
+            "target": "SVC_BACKUP@CORP.LOCAL",
+            "hops": 1,
+            "impacted_users": 1,
+            "path": "CAROL@CORP.LOCAL -> [ForceChangePassword] SVC_BACKUP@CORP.LOCAL"
+          }
+        },
+        {
+          "key": "S-1-5-21-1000-2000-3000-1200|S-1-5-21-1000-2000-3000-1301|S-1-5-21-1000-2000-3000-1105",
+          "name": "HELPDESK@CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1200",
+          "type": "Group",
+          "severity": "High",
+          "details": {
+            "target": "JANE@CORP.LOCAL",
+            "hops": 2,
+            "impacted_users": 1,
+            "path": "HELPDESK@CORP.LOCAL -> [AdminTo] WS01.CORP.LOCAL -> [HasSession] JANE@CORP.LOCAL"
+          }
+        },
+        {
+          "key": "S-1-5-21-1000-2000-3000-1109|S-1-5-21-1000-2000-3000-1000",
+          "name": "SVC_WEB@CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1109",
+          "type": "User",
+          "severity": "High",
+          "details": {
+            "target": "DC01.CORP.LOCAL",
+            "hops": 1,
+            "impacted_users": 1,
+            "path": "SVC_WEB@CORP.LOCAL -> [AllowedToDelegate] DC01.CORP.LOCAL"
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-ACCESS-001",
+      "title": "Domain-wide groups have local administrator rights",
+      "severity": "High",
+      "category": "Host access",
+      "description": "Domain Users, Domain Computers, Authenticated Users, Everyone (or a group containing them) are local administrators on these computers. Every account in the domain can therefore dump credentials from them and move laterally.",
+      "remediation": "Remove broad groups from the local Administrators group, both directly and through Group Policy (Restricted Groups / Local Users and Groups preferences). Grant admin rights per tier via dedicated groups and use LAPS for the built-in Administrator.",
+      "controls": [
+        {
+          "nist": "3.1.5",
+          "cmmc": "AC.L2-3.1.5",
+          "title": "Employ least privilege, including for security functions and privileged accounts"
+        },
+        {
+          "nist": "3.1.6",
+          "cmmc": "AC.L2-3.1.6",
+          "title": "Use non-privileged accounts when accessing nonsecurity functions"
+        },
+        {
+          "nist": "3.1.7",
+          "cmmc": "AC.L2-3.1.7",
+          "title": "Prevent non-privileged users from executing privileged functions"
+        }
+      ],
+      "references": [],
+      "affected_count": 1,
+      "affected": [
+        {
+          "key": "S-1-5-21-1000-2000-3000-513|S-1-5-21-1000-2000-3000-1302",
+          "name": "WS02.CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1302",
+          "type": "Computer",
+          "severity": "High",
+          "details": {
+            "principal": "DOMAIN USERS@CORP.LOCAL",
+            "granted_via": "Local group membership",
+            "operating_system": "Windows 11 Enterprise"
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-ACCESS-002",
+      "title": "Tier 0 sessions on non-Tier 0 hosts",
+      "severity": "High",
+      "category": "Host access",
+      "description": "Tier 0 accounts were logged on to workstations or member servers at collection time. Their credentials or tokens can be harvested by anyone with administrative access to those hosts, which is a classic path to domain compromise.",
+      "remediation": "Enforce a tiered administration model: Tier 0 accounts log on only to domain controllers and Privileged Access Workstations. Apply 'Deny log on' user rights for Tier 0 groups on lower tiers (or Authentication Policy Silos) and add admins to Protected Users.",
+      "controls": [
+        {
+          "nist": "3.1.5",
+          "cmmc": "AC.L2-3.1.5",
+          "title": "Employ least privilege, including for security functions and privileged accounts"
+        },
+        {
+          "nist": "3.1.6",
+          "cmmc": "AC.L2-3.1.6",
+          "title": "Use non-privileged accounts when accessing nonsecurity functions"
+        },
+        {
+          "nist": "3.1.12",
+          "cmmc": "AC.L2-3.1.12",
+          "title": "Monitor and control remote access sessions"
+        }
+      ],
+      "references": [],
+      "affected_count": 1,
+      "affected": [
+        {
+          "key": "S-1-5-21-1000-2000-3000-1301|S-1-5-21-1000-2000-3000-1105",
+          "name": "JANE@CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1105",
+          "type": "User",
+          "severity": "High",
+          "details": {
+            "computer": "WS01.CORP.LOCAL",
+            "operating_system": "Windows 10 Pro",
+            "why_tier0": "Member of DOMAIN ADMINS@CORP.LOCAL"
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-ADCS-ESC4",
+      "title": "ADCS ESC4: certificate template writable by non-Tier 0 principals",
+      "severity": "High",
+      "category": "ADCS",
+      "description": "Non-Tier 0 principals can modify these certificate templates. They can reconfigure a template into an ESC1-style template, request a certificate as a Domain Admin and revert the change.",
+      "remediation": "Remove write permissions (GenericAll, GenericWrite, WriteDacl, WriteOwner, WriteProperty) from non-Tier 0 principals on certificate templates; treat templates and CAs as Tier 0.",
+      "controls": [
+        {
+          "nist": "3.1.5",
+          "cmmc": "AC.L2-3.1.5",
+          "title": "Employ least privilege, including for security functions and privileged accounts"
+        },
+        {
+          "nist": "3.1.7",
+          "cmmc": "AC.L2-3.1.7",
+          "title": "Prevent non-privileged users from executing privileged functions"
+        },
+        {
+          "nist": "3.13.10",
+          "cmmc": "SC.L2-3.13.10",
+          "title": "Establish and manage cryptographic keys"
+        }
+      ],
+      "references": [
+        "https://posts.specterops.io/certified-pre-owned-d95910965cd2"
+      ],
+      "affected_count": 1,
+      "affected": [
+        {
+          "key": "0A1B2C3D-0000-4000-8000-0000000000D4",
+          "name": "WEBSERVER@CORP.LOCAL",
+          "objectid": "0A1B2C3D-0000-4000-8000-0000000000D4",
+          "type": "CertTemplate",
+          "severity": "High",
+          "details": {
+            "principals": [
+              "HELPDESK@CORP.LOCAL"
+            ],
+            "rights": [
+              "GenericWrite"
+            ],
+            "published_on": [
+              "CORP-CA@CORP.LOCAL"
+            ],
+            "ekus": [
+              "1.3.6.1.5.5.7.3.1"
+            ],
+            "published": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-HYG-003",
+      "title": "Passwords set to never expire",
+      "severity": "High",
+      "category": "Hygiene",
+      "description": "Enabled users with DONT_EXPIRE_PASSWORD keep the same password indefinitely, so a leaked or cracked password stays valid. Privileged accounts with this flag are rated High.",
+      "remediation": "Clear 'Password never expires' and rely on long passphrases with a rotation or breach-detection policy. Move service accounts to gMSAs, which rotate automatically.",
+      "controls": [
+        {
+          "nist": "3.5.7",
+          "cmmc": "IA.L2-3.5.7",
+          "title": "Enforce minimum password complexity"
+        }
+      ],
+      "references": [],
+      "affected_count": 2,
+      "affected": [
+        {
+          "key": "S-1-5-21-1000-2000-3000-500",
+          "name": "ADMINISTRATOR@CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-500",
+          "type": "User",
+          "severity": "High",
+          "details": {
+            "privileged": true,
+            "password_last_set": "2023-07-16",
+            "password_age_days": 898
+          }
+        },
+        {
+          "key": "S-1-5-21-1000-2000-3000-1101",
+          "name": "SVC_SQL@CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1101",
+          "type": "User",
+          "severity": "Medium",
+          "details": {
+            "privileged": false,
+            "password_last_set": "2023-07-16",
+            "password_age_days": 898
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-HYG-004",
+      "title": "Unsupported operating systems",
+      "severity": "High",
+      "category": "Hygiene",
+      "description": "Enabled computers report an operating system that no longer receives security updates (unless covered by Extended Security Updates, which this data cannot show).",
+      "remediation": "Upgrade or decommission these systems. If that is not yet possible, enrol them in ESU, isolate them on the network and remove privileged logons from them.",
+      "controls": [
+        {
+          "nist": "3.14.1",
+          "cmmc": "SI.L2-3.14.1",
+          "title": "Identify, report and correct system flaws in a timely manner"
+        },
+        {
+          "nist": "3.11.3",
+          "cmmc": "RA.L2-3.11.3",
+          "title": "Remediate vulnerabilities in accordance with risk assessments"
+        },
+        {
+          "nist": "3.4.1",
+          "cmmc": "CM.L2-3.4.1",
+          "title": "Establish and maintain baseline configurations and inventories"
+        }
+      ],
+      "references": [],
+      "affected_count": 3,
+      "affected": [
+        {
+          "key": "S-1-5-21-1000-2000-3000-1303",
+          "name": "APP01.CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1303",
+          "type": "Computer",
+          "severity": "High",
+          "details": {
+            "operating_system": "Windows Server 2012 R2 Standard",
+            "last_logon": "2025-12-30"
+          }
+        },
+        {
+          "key": "S-1-5-21-1000-2000-3000-1304",
+          "name": "OLD01.CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1304",
+          "type": "Computer",
+          "severity": "High",
+          "details": {
+            "operating_system": "Windows Server 2008 R2 Enterprise",
+            "last_logon": "2025-06-15"
+          }
+        },
+        {
+          "key": "S-1-5-21-1000-2000-3000-1301",
+          "name": "WS01.CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1301",
+          "type": "Computer",
+          "severity": "High",
+          "details": {
+            "operating_system": "Windows 10 Pro",
+            "last_logon": "2025-12-30"
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-KERB-003",
+      "title": "AS-REP roastable accounts (pre-authentication disabled)",
+      "severity": "High",
+      "category": "Kerberos",
+      "description": "These accounts have 'Do not require Kerberos pre-authentication' set. Anyone who can reach a domain controller, even without credentials, can request encrypted material for them and crack the password offline.",
+      "remediation": "Clear the DONT_REQ_PREAUTH flag (userAccountControl 0x400000) on all accounts. If a legacy application needs it, isolate the account, give it a long random password and monitor event 4768 with pre-authentication type 0.",
+      "controls": [
+        {
+          "nist": "3.5.2",
+          "cmmc": "IA.L2-3.5.2",
+          "title": "Authenticate the identities of users, processes or devices"
+        },
+        {
+          "nist": "3.5.10",
+          "cmmc": "IA.L2-3.5.10",
+          "title": "Store and transmit only cryptographically-protected passwords"
+        }
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T1558/004/"
+      ],
+      "affected_count": 1,
+      "affected": [
+        {
+          "key": "S-1-5-21-1000-2000-3000-1102",
+          "name": "ALICE@CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1102",
+          "type": "User",
+          "severity": "High",
+          "details": {
+            "tier0": false,
+            "admincount": false,
+            "password_age_days": 898
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-DELEG-003",
+      "title": "Resource-based constrained delegation (RBCD) configured",
+      "severity": "Medium",
+      "category": "Delegation",
+      "description": "These computers list another principal in msDS-AllowedToActOnBehalfOfOtherIdentity. That principal can impersonate any non-protected user, including administrators, to the computer. Unexpected RBCD entries are a common persistence and lateral-movement technique.",
+      "remediation": "Confirm each RBCD entry is required and documented. Remove unexpected entries, set ms-DS-MachineAccountQuota to 0 and restrict who can write msDS-AllowedToActOnBehalfOfOtherIdentity.",
+      "controls": [
+        {
+          "nist": "3.1.5",
+          "cmmc": "AC.L2-3.1.5",
+          "title": "Employ least privilege, including for security functions and privileged accounts"
+        }
+      ],
+      "references": [],
+      "affected_count": 1,
+      "affected": [
+        {
+          "key": "S-1-5-21-1000-2000-3000-1302->S-1-5-21-1000-2000-3000-1303",
+          "name": "APP01.CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1303",
+          "type": "Computer",
+          "severity": "Medium",
+          "details": {
+            "principal": "WS02.CORP.LOCAL",
+            "principal_type": "Computer",
+            "computer_tier0": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-HYG-002",
+      "title": "Stale enabled accounts (inactive > 90 days)",
+      "severity": "Medium",
+      "category": "Hygiene",
+      "description": "Enabled user and computer accounts with no logon in more than 90 days, relative to the newest logon timestamp in the data set. Dormant accounts are attractive targets because their compromise goes unnoticed.",
+      "remediation": "Disable inactive accounts after confirming with owners, move them to a quarantine OU and delete them after a retention period. Automate this with a scheduled review.",
+      "controls": [
+        {
+          "nist": "3.5.6",
+          "cmmc": "IA.L2-3.5.6",
+          "title": "Disable identifiers after a defined period of inactivity"
+        },
+        {
+          "nist": "3.1.1",
+          "cmmc": "AC.L2-3.1.1",
+          "title": "Limit system access to authorized users, processes and devices"
+        }
+      ],
+      "references": [],
+      "affected_count": 2,
+      "affected": [
+        {
+          "key": "S-1-5-21-1000-2000-3000-1103",
+          "name": "BOB@CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1103",
+          "type": "User",
+          "severity": "Medium",
+          "details": {
+            "last_logon": "2025-06-15",
+            "days_inactive": 198,
+            "reason": "Last logon 198 days ago",
+            "privileged": false
+          }
+        },
+        {
+          "key": "S-1-5-21-1000-2000-3000-1304",
+          "name": "OLD01.CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1304",
+          "type": "Computer",
+          "severity": "Medium",
+          "details": {
+            "last_logon": "2025-06-15",
+            "days_inactive": 198,
+            "reason": "Last logon 198 days ago",
+            "privileged": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-HYG-005",
+      "title": "Computers without LAPS",
+      "severity": "Medium",
+      "category": "Hygiene",
+      "description": "Enabled non-DC computers have no LAPS-managed local administrator password. Shared local administrator passwords let one compromised machine unlock many others (pass-the-hash).",
+      "remediation": "Deploy Windows LAPS (or legacy Microsoft LAPS) to all workstations and member servers and restrict who can read the password attributes.",
+      "controls": [
+        {
+          "nist": "3.5.7",
+          "cmmc": "IA.L2-3.5.7",
+          "title": "Enforce minimum password complexity"
+        },
+        {
+          "nist": "3.1.5",
+          "cmmc": "AC.L2-3.1.5",
+          "title": "Employ least privilege, including for security functions and privileged accounts"
+        }
+      ],
+      "references": [],
+      "affected_count": 3,
+      "affected": [
+        {
+          "key": "S-1-5-21-1000-2000-3000-1303",
+          "name": "APP01.CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1303",
+          "type": "Computer",
+          "severity": "Medium",
+          "details": {
+            "operating_system": "Windows Server 2012 R2 Standard"
+          }
+        },
+        {
+          "key": "S-1-5-21-1000-2000-3000-1304",
+          "name": "OLD01.CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1304",
+          "type": "Computer",
+          "severity": "Medium",
+          "details": {
+            "operating_system": "Windows Server 2008 R2 Enterprise"
+          }
+        },
+        {
+          "key": "S-1-5-21-1000-2000-3000-1301",
+          "name": "WS01.CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1301",
+          "type": "Computer",
+          "severity": "Medium",
+          "details": {
+            "operating_system": "Windows 10 Pro"
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-KERB-002",
+      "title": "Kerberoastable user accounts",
+      "severity": "Medium",
+      "category": "Kerberos",
+      "description": "Enabled user accounts with SPNs can be Kerberoasted by any domain user. Weak or old passwords on these service accounts are routinely cracked and give the attacker the service's access.",
+      "remediation": "Convert service accounts to gMSAs where possible. Otherwise use long random passwords, rotate them, require AES encryption and remove SPNs that are no longer used.",
+      "controls": [
+        {
+          "nist": "3.5.7",
+          "cmmc": "IA.L2-3.5.7",
+          "title": "Enforce minimum password complexity"
+        },
+        {
+          "nist": "3.5.10",
+          "cmmc": "IA.L2-3.5.10",
+          "title": "Store and transmit only cryptographically-protected passwords"
+        }
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T1558/003/"
+      ],
+      "affected_count": 2,
+      "affected": [
+        {
+          "key": "S-1-5-21-1000-2000-3000-1101",
+          "name": "SVC_SQL@CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1101",
+          "type": "User",
+          "severity": "Medium",
+          "details": {
+            "spns": [
+              "MSSQLSvc/sql01.corp.local:1433"
+            ],
+            "password_last_set": "2023-07-16",
+            "password_age_days": 898,
+            "admincount": false,
+            "tier0": false
+          }
+        },
+        {
+          "key": "S-1-5-21-1000-2000-3000-1109",
+          "name": "SVC_WEB@CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1109",
+          "type": "User",
+          "severity": "Medium",
+          "details": {
+            "spns": [
+              "HTTP/web01.corp.local"
+            ],
+            "password_last_set": "2023-07-16",
+            "password_age_days": 898,
+            "admincount": false,
+            "tier0": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "HR-HYG-001",
+      "title": "Orphaned adminCount attribute",
+      "severity": "Low",
+      "category": "Hygiene",
+      "description": "These objects have adminCount=1 but are no longer members of any protected group. SDProp stops managing them, leaving inheritance disabled and a stale ACL, and many tools still treat them as privileged, which hides real changes.",
+      "remediation": "Clear adminCount, re-enable ACL inheritance on the object and confirm the account no longer needs elevated access. Review why the account was privileged in the first place.",
+      "controls": [
+        {
+          "nist": "3.1.5",
+          "cmmc": "AC.L2-3.1.5",
+          "title": "Employ least privilege, including for security functions and privileged accounts"
+        },
+        {
+          "nist": "3.4.2",
+          "cmmc": "CM.L2-3.4.2",
+          "title": "Establish and enforce security configuration settings"
+        }
+      ],
+      "references": [],
+      "affected_count": 1,
+      "affected": [
+        {
+          "key": "S-1-5-21-1000-2000-3000-1106",
+          "name": "OLD_ADMIN@CORP.LOCAL",
+          "objectid": "S-1-5-21-1000-2000-3000-1106",
+          "type": "User",
+          "severity": "Low",
+          "details": {
+            "enabled": true
+          }
+        }
+      ]
+    }
+  ],
+  "attack_paths": [
+    {
+      "key": "S-1-5-21-1000-2000-3000-513|6AC1786C-016F-11D2-945F-00C04FB984F9",
+      "source": "S-1-5-21-1000-2000-3000-513",
+      "source_name": "DOMAIN USERS@CORP.LOCAL",
+      "source_type": "Group",
+      "target": "6AC1786C-016F-11D2-945F-00C04FB984F9",
+      "target_name": "DEFAULT DOMAIN CONTROLLERS POLICY@CORP.LOCAL",
+      "target_type": "GPO",
+      "target_reason": "GPO linked to DOMAIN CONTROLLERS@CORP.LOCAL",
+      "impact": 6,
+      "length": 1,
+      "hops": [
+        {
+          "src": "S-1-5-21-1000-2000-3000-513",
+          "src_name": "DOMAIN USERS@CORP.LOCAL",
+          "src_type": "Group",
+          "dst": "6AC1786C-016F-11D2-945F-00C04FB984F9",
+          "dst_name": "DEFAULT DOMAIN CONTROLLERS POLICY@CORP.LOCAL",
+          "dst_type": "GPO",
+          "kind": "GenericWrite",
+          "explanation": "DOMAIN USERS@CORP.LOCAL can write attributes of DEFAULT DOMAIN CONTROLLERS POLICY@CORP.LOCAL (e.g. SPN, logon script, key credentials, GPO file path)."
+        }
+      ]
+    },
+    {
+      "key": "S-1-5-21-1000-2000-3000-1104|S-1-5-21-1000-2000-3000-1107",
+      "source": "S-1-5-21-1000-2000-3000-1104",
+      "source_name": "CAROL@CORP.LOCAL",
+      "source_type": "User",
+      "target": "S-1-5-21-1000-2000-3000-1107",
+      "target_name": "SVC_BACKUP@CORP.LOCAL",
+      "target_type": "User",
+      "target_reason": "Member of DOMAIN ADMINS@CORP.LOCAL",
+      "impact": 1,
+      "length": 1,
+      "hops": [
+        {
+          "src": "S-1-5-21-1000-2000-3000-1104",
+          "src_name": "CAROL@CORP.LOCAL",
+          "src_type": "User",
+          "dst": "S-1-5-21-1000-2000-3000-1107",
+          "dst_name": "SVC_BACKUP@CORP.LOCAL",
+          "dst_type": "User",
+          "kind": "ForceChangePassword",
+          "explanation": "CAROL@CORP.LOCAL can reset SVC_BACKUP@CORP.LOCAL's password without knowing the current one."
+        }
+      ]
+    },
+    {
+      "key": "S-1-5-21-1000-2000-3000-1109|S-1-5-21-1000-2000-3000-1000",
+      "source": "S-1-5-21-1000-2000-3000-1109",
+      "source_name": "SVC_WEB@CORP.LOCAL",
+      "source_type": "User",
+      "target": "S-1-5-21-1000-2000-3000-1000",
+      "target_name": "DC01.CORP.LOCAL",
+      "target_type": "Computer",
+      "target_reason": "Domain controller",
+      "impact": 1,
+      "length": 1,
+      "hops": [
+        {
+          "src": "S-1-5-21-1000-2000-3000-1109",
+          "src_name": "SVC_WEB@CORP.LOCAL",
+          "src_type": "User",
+          "dst": "S-1-5-21-1000-2000-3000-1000",
+          "dst_name": "DC01.CORP.LOCAL",
+          "dst_type": "Computer",
+          "kind": "AllowedToDelegate",
+          "explanation": "SVC_WEB@CORP.LOCAL is trusted for constrained delegation to DC01.CORP.LOCAL and can obtain service tickets to it as any user (S4U)."
+        }
+      ]
+    },
+    {
+      "key": "S-1-5-21-1000-2000-3000-1200|S-1-5-21-1000-2000-3000-1301|S-1-5-21-1000-2000-3000-1105",
+      "source": "S-1-5-21-1000-2000-3000-1200",
+      "source_name": "HELPDESK@CORP.LOCAL",
+      "source_type": "Group",
+      "target": "S-1-5-21-1000-2000-3000-1105",
+      "target_name": "JANE@CORP.LOCAL",
+      "target_type": "User",
+      "target_reason": "Member of DOMAIN ADMINS@CORP.LOCAL",
+      "impact": 1,
+      "length": 2,
+      "hops": [
+        {
+          "src": "S-1-5-21-1000-2000-3000-1200",
+          "src_name": "HELPDESK@CORP.LOCAL",
+          "src_type": "Group",
+          "dst": "S-1-5-21-1000-2000-3000-1301",
+          "dst_name": "WS01.CORP.LOCAL",
+          "dst_type": "Computer",
+          "kind": "AdminTo",
+          "explanation": "HELPDESK@CORP.LOCAL is a local administrator on WS01.CORP.LOCAL: it can run code as SYSTEM, dump credentials and impersonate logged-on users."
+        },
+        {
+          "src": "S-1-5-21-1000-2000-3000-1301",
+          "src_name": "WS01.CORP.LOCAL",
+          "src_type": "Computer",
+          "dst": "S-1-5-21-1000-2000-3000-1105",
+          "dst_name": "JANE@CORP.LOCAL",
+          "dst_type": "User",
+          "kind": "HasSession",
+          "explanation": "JANE@CORP.LOCAL has a logon session on WS01.CORP.LOCAL; whoever controls WS01.CORP.LOCAL can harvest JANE@CORP.LOCAL's credentials or tokens from memory."
+        }
+      ]
+    }
+  ],
+  "tier0": [
+    {
+      "name": "DC01.CORP.LOCAL",
+      "objectid": "S-1-5-21-1000-2000-3000-1000",
+      "type": "Computer",
+      "reason": "Domain controller"
+    },
+    {
+      "name": "CORP.LOCAL",
+      "objectid": "S-1-5-21-1000-2000-3000",
+      "type": "Domain",
+      "reason": "Domain object"
+    },
+    {
+      "name": "DEFAULT DOMAIN CONTROLLERS POLICY@CORP.LOCAL",
+      "objectid": "6AC1786C-016F-11D2-945F-00C04FB984F9",
+      "type": "GPO",
+      "reason": "GPO linked to DOMAIN CONTROLLERS@CORP.LOCAL"
+    },
+    {
+      "name": "DEFAULT DOMAIN POLICY@CORP.LOCAL",
+      "objectid": "31B2F340-016D-11D2-945F-00C04FB984F9",
+      "type": "GPO",
+      "reason": "GPO linked to CORP.LOCAL"
+    },
+    {
+      "name": "ADMINISTRATORS@CORP.LOCAL",
+      "objectid": "CORP.LOCAL-S-1-5-32-544",
+      "type": "Group",
+      "reason": "Built-in privileged group (Administrators)"
+    },
+    {
+      "name": "DOMAIN ADMINS@CORP.LOCAL",
+      "objectid": "S-1-5-21-1000-2000-3000-512",
+      "type": "Group",
+      "reason": "Built-in privileged principal (Domain Admins)"
+    },
+    {
+      "name": "DOMAIN CONTROLLERS@CORP.LOCAL",
+      "objectid": "S-1-5-21-1000-2000-3000-516",
+      "type": "Group",
+      "reason": "Built-in privileged principal (Domain Controllers)"
+    },
+    {
+      "name": "ENTERPRISE ADMINS@CORP.LOCAL",
+      "objectid": "S-1-5-21-1000-2000-3000-519",
+      "type": "Group",
+      "reason": "Built-in privileged principal (Enterprise Admins)"
+    },
+    {
+      "name": "ENTERPRISE DOMAIN CONTROLLERS@CORP.LOCAL",
+      "objectid": "CORP.LOCAL-S-1-5-9",
+      "type": "Group",
+      "reason": "Built-in privileged group (Enterprise Domain Controllers)"
+    },
+    {
+      "name": "DOMAIN CONTROLLERS@CORP.LOCAL",
+      "objectid": "0A1B2C3D-0000-4000-8000-000000000001",
+      "type": "OU",
+      "reason": "OU containing domain controllers"
+    },
+    {
+      "name": "ADMINISTRATOR@CORP.LOCAL",
+      "objectid": "S-1-5-21-1000-2000-3000-500",
+      "type": "User",
+      "reason": "Built-in privileged principal (Administrator)"
+    },
+    {
+      "name": "JANE@CORP.LOCAL",
+      "objectid": "S-1-5-21-1000-2000-3000-1105",
+      "type": "User",
+      "reason": "Member of DOMAIN ADMINS@CORP.LOCAL"
+    },
+    {
+      "name": "KRBTGT@CORP.LOCAL",
+      "objectid": "S-1-5-21-1000-2000-3000-502",
+      "type": "User",
+      "reason": "Built-in privileged principal (krbtgt)"
+    },
+    {
+      "name": "SVC_BACKUP@CORP.LOCAL",
+      "objectid": "S-1-5-21-1000-2000-3000-1107",
+      "type": "User",
+      "reason": "Member of DOMAIN ADMINS@CORP.LOCAL"
+    },
+    {
+      "name": "SVC_SYNC@CORP.LOCAL",
+      "objectid": "S-1-5-21-1000-2000-3000-1108",
+      "type": "User",
+      "reason": "Can DCSync (GetChanges + GetChangesAll on the domain)"
+    }
+  ],
+  "stats": {
+    "users": {
+      "total": 12,
+      "enabled": 10,
+      "disabled": 2,
+      "stale_enabled": 1,
+      "password_never_expires": 2,
+      "password_older_than_1y": 10,
+      "kerberoastable": 3,
+      "asrep_roastable": 1,
+      "admincount": 4
+    },
+    "computers": {
+      "total": 5,
+      "enabled": 5,
+      "domain_controllers": 1,
+      "stale_enabled": 1,
+      "unsupported_os": 3,
+      "unconstrained_delegation": 1,
+      "laps_coverage_pct": 25.0
+    },
+    "groups": {
+      "total": 7
+    },
+    "tier0": {
+      "principals": 12,
+      "targets": 15,
+      "by_type": {
+        "Computer": 1,
+        "Domain": 1,
+        "Group": 5,
+        "User": 5
+      }
+    },
+    "os_distribution": [
+      {
+        "name": "Windows Server 2022 Standard",
+        "count": 1,
+        "pct": 20.0,
+        "unsupported": false
+      },
+      {
+        "name": "Windows 10 Pro",
+        "count": 1,
+        "pct": 20.0,
+        "unsupported": true
+      },
+      {
+        "name": "Windows 11 Enterprise",
+        "count": 1,
+        "pct": 20.0,
+        "unsupported": false
+      },
+      {
+        "name": "Windows Server 2012 R2 Standard",
+        "count": 1,
+        "pct": 20.0,
+        "unsupported": true
+      },
+      {
+        "name": "Windows Server 2008 R2 Enterprise",
+        "count": 1,
+        "pct": 20.0,
+        "unsupported": true
+      }
+    ],
+    "collection": {
+      "objects": 41,
+      "placeholders": 3,
+      "relationships": 88,
+      "computers_with_local_admin_data": 5,
+      "computers_with_session_data": 5,
+      "cert_templates": 6,
+      "enterprise_cas": 1
+    }
+  },
+  "inputs": {
+    "files": [
+      {
+        "file": "20260101000000_certtemplates.json",
+        "type": "certtemplates",
+        "version": 6,
+        "count": 6
+      },
+      {
+        "file": "20260101000000_computers.json",
+        "type": "computers",
+        "version": 6,
+        "count": 5
+      },
+      {
+        "file": "20260101000000_containers.json",
+        "type": "containers",
+        "version": 6,
+        "count": 1
+      },
+      {
+        "file": "20260101000000_domains.json",
+        "type": "domains",
+        "version": 6,
+        "count": 1
+      },
+      {
+        "file": "20260101000000_enterprisecas.json",
+        "type": "enterprisecas",
+        "version": 6,
+        "count": 1
+      },
+      {
+        "file": "20260101000000_gpos.json",
+        "type": "gpos",
+        "version": 6,
+        "count": 3
+      },
+      {
+        "file": "20260101000000_groups.json",
+        "type": "groups",
+        "version": 6,
+        "count": 7
+      },
+      {
+        "file": "20260101000000_ous.json",
+        "type": "ous",
+        "version": 6,
+        "count": 2
+      },
+      {
+        "file": "20260101000000_users.json",
+        "type": "users",
+        "version": 5,
+        "count": 12
+      }
+    ],
+    "warnings": [
+      "20260101000000_widgets.json: unknown data type 'widgets'; skipped",
+      "broken.json: not valid JSON (Expecting property name enclosed in double quotes: line 1 column 2 (char 1)); skipped"
+    ]
+  }
+}

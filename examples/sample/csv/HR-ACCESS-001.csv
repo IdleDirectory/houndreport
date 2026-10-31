@@ -1,0 +1,2 @@
+﻿finding_id,key,name,type,objectid,severity,principal,granted_via,operating_system
+HR-ACCESS-001,S-1-5-21-1000-2000-3000-513|S-1-5-21-1000-2000-3000-1302,WS02.CORP.LOCAL,Computer,S-1-5-21-1000-2000-3000-1302,High,DOMAIN USERS@CORP.LOCAL,Local group membership,Windows 11 Enterprise

@@ -1,0 +1,124 @@
+{
+ "data": [
+  {
+   "ObjectIdentifier": "S-1-5-21-1000-2000-3000-512",
+   "Members": [
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-500",
+     "ObjectType": "User"
+    },
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1105",
+     "ObjectType": "User"
+    },
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1107",
+     "ObjectType": "User"
+    }
+   ],
+   "Aces": [],
+   "IsDeleted": false,
+   "Properties": {
+    "name": "DOMAIN ADMINS@CORP.LOCAL",
+    "domain": "CORP.LOCAL",
+    "domainsid": "S-1-5-21-1000-2000-3000"
+   }
+  },
+  {
+   "ObjectIdentifier": "S-1-5-21-1000-2000-3000-513",
+   "Members": [],
+   "Aces": [],
+   "IsDeleted": false,
+   "Properties": {
+    "name": "DOMAIN USERS@CORP.LOCAL",
+    "domain": "CORP.LOCAL",
+    "domainsid": "S-1-5-21-1000-2000-3000"
+   }
+  },
+  {
+   "ObjectIdentifier": "S-1-5-21-1000-2000-3000-515",
+   "Members": [],
+   "Aces": [],
+   "IsDeleted": false,
+   "Properties": {
+    "name": "DOMAIN COMPUTERS@CORP.LOCAL",
+    "domain": "CORP.LOCAL",
+    "domainsid": "S-1-5-21-1000-2000-3000"
+   }
+  },
+  {
+   "ObjectIdentifier": "S-1-5-21-1000-2000-3000-516",
+   "Members": [
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1000",
+     "ObjectType": "Computer"
+    }
+   ],
+   "Aces": [],
+   "IsDeleted": false,
+   "Properties": {
+    "name": "DOMAIN CONTROLLERS@CORP.LOCAL",
+    "domain": "CORP.LOCAL",
+    "domainsid": "S-1-5-21-1000-2000-3000"
+   }
+  },
+  {
+   "ObjectIdentifier": "S-1-5-21-1000-2000-3000-519",
+   "Members": [
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-500",
+     "ObjectType": "User"
+    }
+   ],
+   "Aces": [],
+   "IsDeleted": false,
+   "Properties": {
+    "name": "ENTERPRISE ADMINS@CORP.LOCAL",
+    "domain": "CORP.LOCAL",
+    "domainsid": "S-1-5-21-1000-2000-3000"
+   }
+  },
+  {
+   "ObjectIdentifier": "CORP.LOCAL-S-1-5-32-544",
+   "Members": [
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-512",
+     "ObjectType": "Group"
+    },
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-519",
+     "ObjectType": "Group"
+    }
+   ],
+   "Aces": [],
+   "IsDeleted": false,
+   "Properties": {
+    "name": "ADMINISTRATORS@CORP.LOCAL",
+    "domain": "CORP.LOCAL",
+    "domainsid": "S-1-5-21-1000-2000-3000"
+   }
+  },
+  {
+   "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1200",
+   "Members": [
+    {
+     "ObjectIdentifier": "S-1-5-21-1000-2000-3000-1102",
+     "ObjectType": "User"
+    }
+   ],
+   "Aces": [],
+   "IsDeleted": false,
+   "Properties": {
+    "name": "HELPDESK@CORP.LOCAL",
+    "domain": "CORP.LOCAL",
+    "domainsid": "S-1-5-21-1000-2000-3000"
+   }
+  }
+ ],
+ "meta": {
+  "methods": 0,
+  "type": "groups",
+  "count": 7,
+  "version": 6
+ }
+}

@@ -1,0 +1,2 @@
+﻿finding_id,key,name,type,objectid,severity,principal,principal_type,computer_tier0
+HR-DELEG-003,S-1-5-21-1000-2000-3000-1302->S-1-5-21-1000-2000-3000-1303,APP01.CORP.LOCAL,Computer,S-1-5-21-1000-2000-3000-1303,Medium,WS02.CORP.LOCAL,Computer,No

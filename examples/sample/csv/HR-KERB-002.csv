@@ -1,0 +1,3 @@
+﻿finding_id,key,name,type,objectid,severity,spns,password_last_set,password_age_days,admincount,tier0
+HR-KERB-002,S-1-5-21-1000-2000-3000-1101,SVC_SQL@CORP.LOCAL,User,S-1-5-21-1000-2000-3000-1101,Medium,MSSQLSvc/sql01.corp.local:1433,2023-07-16,898,No,No
+HR-KERB-002,S-1-5-21-1000-2000-3000-1109,SVC_WEB@CORP.LOCAL,User,S-1-5-21-1000-2000-3000-1109,Medium,HTTP/web01.corp.local,2023-07-16,898,No,No

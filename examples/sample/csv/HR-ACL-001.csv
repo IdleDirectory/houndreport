@@ -1,0 +1,2 @@
+﻿finding_id,key,name,type,objectid,severity,domains,effective_members
+HR-ACL-001,S-1-5-21-1000-2000-3000-1108,SVC_SYNC@CORP.LOCAL,User,S-1-5-21-1000-2000-3000-1108,Critical,CORP.LOCAL,0
